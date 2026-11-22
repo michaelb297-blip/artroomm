@@ -460,9 +460,10 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
   catch { fdb = initializeFirestore(fbApp, {}); }
   const wrapDoc = s => ({ id: s.id, exists: s.exists(), data: () => s.data(), metadata: s.metadata });
   const docApi = ref => ({ id: ref.id, set: d => setDoc(ref, d), update: d => updateDoc(ref, d), delete: () => deleteDoc(ref),
-    get: async () => wrapDoc(await getDoc(ref)), onSnapshot: (n, e) => onSnapshot(ref, s => n(wrapDoc(s)), e) });
+    get: async () => wrapDoc(await getDoc(ref)), onSnapshot: (n, e) => onSnapshot(ref, { includeMetadataChanges: true }, s => n(wrapDoc(s)), e) });
   const colApi = name => { const c = collection(fdb, name); return { doc: id => docApi(id ? doc(c, id) : doc(c)),
-    orderBy: f => ({ onSnapshot: (n, e) => onSnapshot(query(c, orderBy(f)), s => n({ docs: s.docs.map(d => ({ id: d.id, data: () => d.data() })), metadata: s.metadata }), e) }) }; };
+    orderBy: f => ({ onSnapshot: (n, e) => onSnapshot(query(c, orderBy(f)), { includeMetadataChanges: true }, s => n({ docs: s.docs.map(d => ({ id: d.id, data: () => d.data() })), metadata: s.metadata }), e) }) }; };
+  window.__art = () => ({ orders: state.orders.length, expenses: state.expenses.length, xl: { connected: xl.connected, dataReady: xl.dataReady, metaLoaded: xl.metaLoaded, busy: xl.busy, msg: xl.msg, meta: xl.meta && { v: xl.meta.v, at: xl.meta.at } } });
   const DB = { collection: colApi, doc: path => { const [c, id] = path.split("/"); return docApi(doc(fdb, c, id)); } };
 
   /* ---------- Fotos (verkleinert in der Datenbank) ---------- */
