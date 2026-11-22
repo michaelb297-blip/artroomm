@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ArtRooomM</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ArtRooomM">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#fdf0f5">
+<link rel="preload" as="image" href="logo-wide.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Firmenbuch-Welt: Pastellrosa Grund, Pflaume als Schrift, Mint = Ausgaben, Butter = Gewinn */
+  --bg: #fdf0f5;
+  --paper: #ffffff;
+  --rose: #f5c9dc;
+  --rose-soft: #fae0eb;
+  --accent: #c2477f;
+  --accent-ink: #ffffff;
+  --ink: #4a2238;
+  --muted: #8d6178;
+  --line: #efd3e0;
+  --mint: #d7efe2;  --mint-ink: #2c6a4c;
+  --lilac: #e7ddf8; --lilac-ink: #5a3d91;
+  --coral: #fbd5d9; --coral-ink: #a3303f;
+  --butter: #fbe6a2; --butter-ink: #6e5100;
+  --display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --body: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --r: 16px;
+  --nav-h: 64px;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.4;
+  -webkit-tap-highlight-color: transparent;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+.num { font-variant-numeric: tabular-nums; }
+
+.app { max-width: 560px; margin: 0 auto; min-height: 100%; padding: 0 16px calc(var(--nav-h) + 96px + env(safe-area-inset-bottom)); }
+
+/* Kopf */
+header.top {
+  position: sticky; top: 0; z-index: 5;
+  background: var(--bg);
+  padding: calc(12px + env(safe-area-inset-top)) 0 10px;
+  display: grid; gap: 10px;
+}
+.brand { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.brand h1 { font-family: var(--display); font-weight: 700; font-size: 26px; margin: 0; letter-spacing: .2px; color: var(--accent); }
+.brand h1 small { display: block; font-family: var(--body); font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .8px; text-transform: uppercase; }
+.sync { font-size: 12px; color: var(--muted); text-align: right; max-width: 45%; }
+.sync.warn { color: var(--coral-ink); }
+
+.period { display: flex; align-items: center; gap: 8px; }
+.period .step { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper); font-size: 20px; line-height: 1; display: grid; place-items: center; }
+.period .step:disabled { opacity: .35; cursor: default; }
+.period .label { flex: 1; text-align: center; font-family: var(--display); font-size: 20px; font-weight: 600; }
+.chip-toggle { border: 1px solid var(--accent); color: var(--accent); background: transparent; border-radius: 999px; padding: 8px 12px; font-weight: 700; font-size: 13px; white-space: nowrap; }
+.chip-toggle[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+
+/* Ansichten */
+.view { display: none; gap: 16px; }
+.view.active { display: grid; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 20px; margin: 8px 0 0; text-wrap: balance; }
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; }
+
+/* Übersicht */
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tile { border-radius: var(--r); padding: 12px 14px; display: grid; gap: 2px; }
+.tile .k { font-size: 13px; font-weight: 700; }
+.tile .v { font-size: 24px; font-weight: 800; }
+.tile.in  { background: var(--rose); color: var(--ink); }
+.tile.out { background: var(--mint); color: var(--mint-ink); }
+.tile.got { background: var(--lilac); color: var(--lilac-ink); }
+.tile.hold{ background: var(--coral); color: var(--coral-ink); }
+.tile.win { grid-column: 1 / -1; background: var(--butter); color: var(--butter-ink); text-align: center; padding: 16px; }
+.tile.win .v { font-family: var(--display); font-size: 38px; font-weight: 700; }
+.tile .s { font-size: 12px; opacity: .85; }
+
+.bars { display: grid; gap: 12px; }
+.bar-row { display: grid; grid-template-columns: 88px 1fr auto; gap: 10px; align-items: center; font-size: 14px; }
+.bar-row .name { font-weight: 700; }
+.bar-track { height: 14px; border-radius: 999px; background: var(--rose-soft); overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 999px; min-width: 2px; }
+.bar-row .amt { text-align: right; min-width: 92px; }
+.bar-row .amt small { display: block; color: var(--muted); font-size: 12px; }
+
+.months { display: grid; gap: 0; }
+.month-row { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; padding: 12px 2px; border-bottom: 1px solid var(--line); background: none; border-left: 0; border-right: 0; border-top: 0; text-align: left; width: 100%; }
+.month-row:last-child { border-bottom: 0; }
+.month-row .m { font-weight: 700; }
+.month-row .c { color: var(--muted); font-size: 13px; }
+.month-row .g { font-weight: 800; }
+.month-row.current .m { color: var(--accent); }
+
+/* Listen */
+.filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
+.filter { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 8px 14px; font-weight: 700; font-size: 14px; white-space: nowrap; }
+.filter[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+.list { display: grid; gap: 10px; }
+.order { display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: center; background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); padding: 10px; position: relative; }
+.order.sold { background: var(--rose-soft); }
+.order .thumb { width: 56px; height: 56px; border-radius: 12px; background: var(--rose-soft); display: grid; place-items: center; overflow: hidden; border: 0; padding: 0; }
+.order .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.order .thumb svg { width: 28px; height: 28px; }
+.order .main { min-width: 0; border: 0; background: none; text-align: left; padding: 0; display: grid; gap: 3px; }
+.order .title { font-weight: 800; overflow-wrap: anywhere; }
+.order .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); }
+.pill { display: inline-block; border-radius: 999px; padding: 2px 9px; font-size: 12px; font-weight: 800; }
+.order .right { display: grid; justify-items: end; gap: 6px; }
+.order .price { font-weight: 800; }
+.check { width: 40px; height: 40px; border-radius: 12px; border: 2px solid var(--accent); background: var(--paper); display: grid; place-items: center; padding: 0; }
+.check svg { width: 22px; height: 22px; opacity: 0; }
+.check[aria-pressed="true"] { background: var(--accent); }
+.check[aria-pressed="true"] svg { opacity: 1; }
+.check:disabled { opacity: .5; }
+
+.expense { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; background: var(--paper); border: 1px solid var(--line); border-left: 6px solid var(--mint-ink); border-radius: var(--r); padding: 14px; width: 100%; text-align: left; }
+.expense .title { font-weight: 800; }
+.expense .meta { font-size: 13px; color: var(--muted); }
+.expense .price { font-weight: 800; color: var(--mint-ink); }
+
+.sum-line { display: flex; justify-content: space-between; font-weight: 800; padding: 4px 4px 0; }
+.empty { text-align: center; color: var(--muted); padding: 28px 12px; border: 2px dashed var(--line); border-radius: var(--r); }
+
+.fab { position: fixed; right: max(16px, calc(50% - 264px)); bottom: calc(var(--nav-h) + 16px + env(safe-area-inset-bottom)); z-index: 6; height: 56px; padding: 0 20px 0 16px; border-radius: 999px; border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 16px; display: flex; align-items: center; gap: 8px; box-shadow: 0 6px 18px rgba(194,71,127,.35); }
+.fab svg { width: 22px; height: 22px; }
+.fab[hidden] { display: none; }
+
+/* Navigation */
+nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 7; background: var(--paper); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
+nav.tabs .inner { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); height: var(--nav-h); }
+nav.tabs a { display: grid; place-items: center; align-content: center; gap: 2px; text-decoration: none; color: var(--muted); font-size: 12px; font-weight: 700; }
+nav.tabs a svg { width: 24px; height: 24px; }
+nav.tabs a[aria-current="page"] { color: var(--accent); }
+
+/* Bottom-Sheet */
+.scrim { position: fixed; inset: 0; background: rgba(74,34,56,.4); z-index: 20; display: none; }
+.scrim.open { display: block; }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 21; max-width: 560px; margin: 0 auto; max-height: 92%; overflow-y: auto; background: var(--paper); border-radius: 22px 22px 0 0; padding: 10px 16px calc(20px + env(safe-area-inset-bottom)); display: none; }
+.sheet.open { display: block; }
+.sheet .grab { width: 44px; height: 5px; border-radius: 9px; background: var(--line); margin: 0 auto 10px; }
+.sheet h3 { font-family: var(--display); font-size: 22px; margin: 0 0 12px; }
+form.f { display: grid; gap: 14px; }
+.field { display: grid; gap: 6px; }
+.field label, .field .lbl { font-weight: 800; font-size: 14px; }
+.field input[type=text], .field input[type=month], .field input[inputmode], .field textarea {
+  width: 100%; border: 1.5px solid var(--line); background: var(--bg); border-radius: 12px; padding: 12px; font-size: 16px;
+}
+.field textarea { min-height: 70px; resize: vertical; }
+.field input:focus, .field textarea:focus { border-color: var(--accent); outline: none; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg button { border: 1.5px solid var(--line); background: var(--paper); border-radius: 999px; padding: 8px 14px; font-weight: 700; font-size: 14px; }
+.seg button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff; }
+.switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--rose-soft); border-radius: 12px; padding: 12px; font-weight: 800; }
+.switch button { width: 56px; height: 32px; border-radius: 999px; border: 0; background: #d9bfcc; position: relative; padding: 0; }
+.switch button::after { content: ""; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: left .15s; }
+.switch button[aria-checked="true"] { background: var(--accent); }
+.switch button[aria-checked="true"]::after { left: 28px; }
+.photo-box { display: grid; grid-template-columns: 96px 1fr; gap: 12px; align-items: center; }
+.photo-prev { width: 96px; height: 96px; border-radius: 14px; background: var(--rose-soft); display: grid; place-items: center; overflow: hidden; }
+.photo-prev img { width: 100%; height: 100%; object-fit: cover; }
+.photo-actions { display: grid; gap: 8px; justify-items: start; }
+.btn { border: 0; border-radius: 12px; padding: 12px 16px; font-weight: 800; font-size: 16px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: var(--rose-soft); color: var(--ink); }
+.btn.small { padding: 8px 12px; font-size: 14px; }
+.btn.danger { background: transparent; color: var(--coral-ink); border: 1.5px solid var(--coral); }
+.btn.danger.armed { background: var(--coral-ink); color: #fff; border-color: var(--coral-ink); }
+.btn:disabled { opacity: .55; }
+.actions { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-top: 4px; }
+.hint { font-size: 13px; color: var(--muted); }
+.err { color: var(--coral-ink); font-size: 13px; font-weight: 700; }
+
+/* Foto groß */
+.viewer { position: fixed; inset: 0; z-index: 30; background: rgba(30,10,20,.92); display: none; place-items: center; padding: 20px; }
+.viewer.open { display: grid; }
+.viewer img { max-width: 100%; max-height: 85%; border-radius: 12px; }
+.viewer button { position: absolute; top: calc(14px + env(safe-area-inset-top)); right: 14px; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + 86px + env(safe-area-inset-bottom)); z-index: 40; background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; font-size: 14px; max-width: calc(100% - 32px); display: none; }
+.toast.show { display: block; }
+
+.export-card { display: grid; gap: 10px; }
+.export-card a.btn { text-align: center; text-decoration: none; }
+.xl-state { font-weight: 700; }
+.xl-state.ok { color: var(--mint-ink); }
+.xl-state.warn { color: var(--coral-ink); }
+#sync.warn { color: var(--coral-ink); }
+.export-card p { margin: 0; }
+
+.field input[type=password] { width: 100%; border: 1.5px solid var(--line); background: var(--bg); border-radius: 12px; padding: 12px; font-size: 16px; }
+.field input[type=password]:focus { border-color: var(--accent); outline: none; }
+.auth { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: grid; place-items: center; padding: calc(24px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom)); overflow-y: auto; }
+.auth[hidden], .auth [hidden] { display: none !important; }
+.auth-card { width: 100%; max-width: 400px; display: grid; gap: 16px; }
+.auth-head { text-align: center; display: grid; justify-items: center; gap: 4px; }
+.auth-logo { width: 100%; max-width: 360px; border-radius: 20px; background: #000; box-shadow: 0 10px 28px rgba(120,20,70,.35); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.brand-logo { display: flex; align-items: center; gap: 10px; margin: 0; }
+.brand-logo img { height: 46px; width: auto; border-radius: 12px; background: #000; display: block; box-shadow: 0 4px 12px rgba(120,20,70,.25); }
+.brand-logo small { font-family: var(--body); font-size: 12px; font-weight: 800; color: var(--muted); letter-spacing: .8px; text-transform: uppercase; }
+.auth form, .auth .box { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 12px; }
+.auth .box p { margin: 0; }
+.auth p:empty { display: none; }
+.linkbtn { background: none; border: 0; color: var(--accent); font-weight: 700; padding: 6px; text-decoration: underline; }
+.acct { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="auth" id="auth">
+  <div class="auth-card">
+    <div class="auth-head"><h1 class="sr">ArtRooomM</h1><img class="auth-logo" src="logo-wide.jpg" alt="ArtRooomM"><span class="hint">Firmenbuch</span></div>
+    <form id="authForm" novalidate hidden>
+      <div class="field"><label for="aEmail">E-Mail</label><input type="text" id="aEmail" inputmode="email" autocomplete="username" autocapitalize="off" spellcheck="false"></div>
+      <div class="field"><label for="aPass">Passwort</label><input type="password" id="aPass" autocomplete="current-password"></div>
+      <p class="err" id="aErr" role="alert"></p>
+      <p class="hint" id="aInfo" role="status"></p>
+      <button type="submit" class="btn primary" id="aLogin">Anmelden</button>
+      <button type="button" class="btn ghost" id="aRegister">Neues Konto erstellen</button>
+      <button type="button" class="linkbtn" id="aReset">Passwort vergessen?</button>
+    </form>
+    <div class="box" id="verifyBox" hidden>
+      <p><b>Bitte bestätige deine E-Mail-Adresse.</b> Wir haben dir einen Link an <span id="vMail"></span> geschickt. Schau auch im Spam-Ordner nach.</p>
+      <p class="err" id="vErr" role="alert"></p>
+      <button type="button" class="btn primary" id="vDone">Ich habe bestätigt</button>
+      <button type="button" class="btn ghost" id="vResend">E-Mail nochmal senden</button>
+      <button type="button" class="linkbtn" id="vLogout">Mit anderem Konto anmelden</button>
+    </div>
+    <div class="box" id="deniedBox" hidden>
+      <p><b>Kein Zugriff.</b> Das Konto <span id="dMail"></span> ist für das ArtRooomM-Firmenbuch nicht freigeschaltet.</p>
+      <button type="button" class="btn ghost" id="dLogout">Mit anderem Konto anmelden</button>
+    </div>
+  </div>
+</div>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1 class="brand-logo"><img src="logo-wide.jpg" alt="ArtRooomM"><small>Firmenbuch</small></h1>
+      <div class="sync"><span id="sync" role="status">Lade Daten …</span><br><span id="xlMini"></span></div>
+    </div>
+    <div class="period" id="period">
+      <button class="step" id="prev" aria-label="Vorheriger Monat">‹</button>
+      <div class="label" id="periodLabel">–</div>
+      <button class="step" id="next" aria-label="Nächster Monat">›</button>
+      <button class="chip-toggle" id="yearToggle" aria-pressed="false">Ganzes Jahr</button>
+    </div>
+  </header>
+
+  <!-- Übersicht -->
+  <section class="view" id="v-uebersicht" aria-label="Übersicht">
+    <div class="tiles">
+      <div class="tile in"><span class="k">Gesamt Einnahmen</span><span class="v num" id="tIn">–</span><span class="s" id="tInS"></span></div>
+      <div class="tile out"><span class="k">Gesamt Ausgaben</span><span class="v num" id="tOut">–</span><span class="s" id="tOutS"></span></div>
+      <div class="tile got"><span class="k">Bereits erhalten</span><span class="v num" id="tGot">–</span><span class="s" id="tGotS"></span></div>
+      <div class="tile hold"><span class="k">On Hold</span><span class="v num" id="tHold">–</span><span class="s" id="tHoldS"></span></div>
+      <div class="tile win"><span class="k">Gesamt Gewinn</span><span class="v num" id="tWin">–</span><span class="s">Einnahmen minus Ausgaben</span></div>
+    </div>
+    <h2>Verkäufe pro Plattform</h2>
+    <div class="card"><div class="bars" id="bars"></div></div>
+    <h2>Monate</h2>
+    <div class="card"><div class="months" id="months"></div></div>
+  </section>
+
+  <!-- Aufträge -->
+  <section class="view" id="v-auftraege" aria-label="Aufträge">
+    <div class="filters" role="group" aria-label="Aufträge filtern">
+      <button class="filter" data-f="alle" aria-pressed="true">Alle</button>
+      <button class="filter" data-f="offen" aria-pressed="false">Offen</button>
+      <button class="filter" data-f="verkauft" aria-pressed="false">Verkauft</button>
+    </div>
+    <div class="list" id="orderList"></div>
+    <div class="sum-line num" id="orderSum"></div>
+  </section>
+
+  <!-- Ausgaben -->
+  <section class="view" id="v-ausgaben" aria-label="Ausgaben">
+    <div class="list" id="expList"></div>
+    <div class="sum-line num" id="expSum"></div>
+  </section>
+
+  <!-- Export -->
+  <section class="view" id="v-export" aria-label="Excel-Export">
+    <h2>Excel auf OneDrive</h2>
+    <div class="card export-card">
+      <p>Die App und die Datei <b>Firmenbuch_ArtRooomM_App.xlsx</b> in Michaels OneDrive gleichen sich gegenseitig ab, auch wenn die Excel gerade offen ist. Änderungen in der App stehen nach wenigen Sekunden in der Excel, Änderungen in der Excel holt die App etwa jede Minute. Trag neue Einträge in eine freie Zeile im Monatsblock ein. Zum Löschen leerst du die Zellen, statt die ganze Zeile zu löschen, weil Aufträge und Ausgaben nebeneinander stehen.</p>
+      <p class="xl-state" id="xlState" role="status">Wird geprüft …</p>
+      <button class="btn primary" id="msConnect" hidden>Mit Microsoft verbinden</button>
+      <button class="btn primary" id="xlSyncBtn" hidden>Excel jetzt abgleichen</button>
+      <a class="btn ghost" id="xlOpen" href="#" target="_blank" rel="noopener" hidden>In OneDrive öffnen</a>
+    </div>
+    <h2>Als Excel speichern</h2>
+    <div class="card export-card">
+      <p>Speichert dieselbe Excel-Datei auf diesem Gerät, z. B. in „Dateien“.</p>
+      <button class="btn primary" id="exportBtn">Excel-Datei speichern</button>
+      <p class="hint" id="exportHint"></p>
+    </div>
+    <h2>Gemeinsam bearbeiten</h2>
+    <div class="card export-card">
+      <p>Alle Änderungen werden sofort gespeichert und sind auf jedem Gerät sichtbar, auf dem die App offen ist. Jede Person meldet sich mit der eigenen E-Mail-Adresse an.</p>
+      <div class="acct"><span>Angemeldet als <b id="acctMail">–</b></span><button class="btn ghost small" id="logoutBtn">Abmelden</button></div>
+    </div>
+  </section>
+</div>
+
+<button class="fab" id="fab" hidden>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  <span id="fabLabel">Auftrag</span>
+</button>
+
+<nav class="tabs" aria-label="Bereiche">
+  <div class="inner">
+    <a href="#uebersicht" data-v="uebersicht">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>
+      Übersicht</a>
+    <a href="#auftraege" data-v="auftraege">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M5.5 8.5c4 1 9 1 13 0M4.5 13c5 1.5 10 1.5 15 0M9 4.6c-1.5 4.5-1.5 10.3 1 15M15 4.6c1.5 4.5 1.5 10.3-1 15"/></svg>
+      Aufträge</a>
+    <a href="#ausgaben" data-v="ausgaben">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>
+      Ausgaben</a>
+    <a href="#export" data-v="export">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/></svg>
+      Export</a>
+  </div>
+</nav>
+
+<div class="scrim" id="scrim"></div>
+
+<!-- Auftrag-Formular -->
+<div class="sheet" id="orderSheet" role="dialog" aria-modal="true" aria-labelledby="orderSheetTitle">
+  <div class="grab"></div>
+  <h3 id="orderSheetTitle">Neuer Auftrag</h3>
+  <form class="f" id="orderForm" novalidate>
+    <div class="field"><label for="oName">Auftrag</label><input type="text" id="oName" placeholder="z. B. Schwarze Katze" autocomplete="off"></div>
+    <div class="row2">
+      <div class="field"><label for="oKunde">Name (Kund:in)</label><input type="text" id="oKunde" placeholder="optional" autocomplete="off"></div>
+      <div class="field"><label for="oPreis">Preis (€)</label><input type="text" id="oPreis" inputmode="decimal" placeholder="9,99" autocomplete="off"></div>
+    </div>
+    <div class="field"><span class="lbl" id="oPlatLbl">Plattform</span><div class="seg" id="oPlat" role="group" aria-labelledby="oPlatLbl"></div></div>
+    <div class="field"><label for="oMonat">Monat</label><input type="month" id="oMonat"></div>
+    <div class="switch"><span id="oSoldLbl">Verkauft / Geld erhalten</span><button type="button" role="switch" id="oSold" aria-checked="false" aria-labelledby="oSoldLbl"></button></div>
+    <div class="field">
+      <span class="lbl">Foto</span>
+      <div class="photo-box">
+        <div class="photo-prev" id="oPhotoPrev"></div>
+        <div class="photo-actions">
+          <label class="btn ghost small" for="oPhotoInput" id="oPhotoBtn">Foto wählen</label>
+          <input type="file" id="oPhotoInput" accept="image/*" hidden>
+          <button type="button" class="btn danger small" id="oPhotoRemove" hidden>Foto entfernen</button>
+          <span class="hint" id="oPhotoHint"></span>
+        </div>
+      </div>
+    </div>
+    <div class="field"><label for="oNotiz">Notiz</label><textarea id="oNotiz" placeholder="z. B. Farbe, Größe, Versand …"></textarea></div>
+    <p class="err" id="oErr" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="btn ghost" id="oCancel">Abbrechen</button>
+      <button type="submit" class="btn primary" id="oSave">Speichern</button>
+    </div>
+    <button type="button" class="btn danger" id="oDelete" hidden>Auftrag löschen</button>
+  </form>
+</div>
+
+<!-- Ausgabe-Formular -->
+<div class="sheet" id="expSheet" role="dialog" aria-modal="true" aria-labelledby="expSheetTitle">
+  <div class="grab"></div>
+  <h3 id="expSheetTitle">Neue Ausgabe</h3>
+  <form class="f" id="expForm" novalidate>
+    <div class="field"><label for="eName">Wofür?</label><input type="text" id="eName" placeholder="z. B. Braune Wolle" autocomplete="off"></div>
+    <div class="row2">
+      <div class="field"><label for="eBetrag">Betrag (€)</label><input type="text" id="eBetrag" inputmode="decimal" placeholder="12,00" autocomplete="off"></div>
+      <div class="field"><label for="eMonat">Monat</label><input type="month" id="eMonat"></div>
+    </div>
+    <p class="err" id="eErr" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="btn ghost" id="eCancel">Abbrechen</button>
+      <button type="submit" class="btn primary" id="eSave">Speichern</button>
+    </div>
+    <button type="button" class="btn danger" id="eDelete" hidden>Ausgabe löschen</button>
+  </form>
+</div>
+
+<div class="viewer" id="viewer"><img id="viewerImg" alt=""><button class="btn ghost small" id="viewerClose">Schließen</button></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="config.js"></script>
+<script src="xlsxgen.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, query, orderBy, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+(() => {
+  "use strict";
+  const PLATFORMS = [
+    { id: "Vinted",    color: "#2f9a93" },
+    { id: "Privat",    color: "#c2477f" },
+    { id: "Willhaben", color: "#d39a16" },
+    { id: "Etsy",      color: "#e0703a" },
+    { id: "Sonstiges", color: "#7b62b5" }
+  ];
+  const platColor = id => (PLATFORMS.find(p => p.id === id) || PLATFORMS[4]).color;
+  const MONTHS_DE = ["Jänner","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+  const eur = new Intl.NumberFormat("de-AT", { style: "currency", currency: "EUR" });
+  const fmt = n => eur.format(Math.round((Number(n) || 0) * 100) / 100);
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const today = new Date();
+  const thisMonth = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0");
+  const monthLabel = k => { const [y, m] = k.split("-"); return MONTHS_DE[+m - 1] + " " + y; };
+  const shiftMonth = (k, d) => { let [y, m] = k.split("-").map(Number); m += d; while (m < 1) { m += 12; y--; } while (m > 12) { m -= 12; y++; } return y + "-" + String(m).padStart(2, "0"); };
+  const parseMoney = s => { const t = String(s || "").trim().replace(/\s|€/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", "."); const n = Number(t); return t !== "" && isFinite(n) ? Math.round(n * 100) / 100 : NaN; };
+  const money2 = n => (Number(n) || 0).toFixed(2).replace(".", ",");
+
+  const state = {
+    orders: [], expenses: [],
+    month: thisMonth, year: false,
+    filter: "alle", view: "uebersicht",
+    db: null,
+    canWrite: true, loadedO: false, loadedE: false, pickedMonth: false
+  };
+
+  /* ---------- Hilfen ---------- */
+  let toastT;
+  function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2600); }
+  function setSync(msg, warn) { const s = $("sync"); s.textContent = msg; s.classList.toggle("warn", !!warn); }
+  function inPeriod(rec) { const m = rec.monat || ""; return state.year ? m.slice(0, 4) === state.month.slice(0, 4) : m === state.month; }
+  /* ---------- Firebase ---------- */
+  const CFG = window.ARTROOMM_CONFIG || {};
+  const fbApp = initializeApp(CFG.firebase);
+  const auth = getAuth(fbApp); auth.languageCode = "de";
+  let fdb;
+  try { fdb = initializeFirestore(fbApp, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) }); }
+  catch { fdb = initializeFirestore(fbApp, {}); }
+  const wrapDoc = s => ({ id: s.id, exists: s.exists(), data: () => s.data(), metadata: s.metadata });
+  const docApi = ref => ({ id: ref.id, set: d => setDoc(ref, d), update: d => updateDoc(ref, d), delete: () => deleteDoc(ref),
+    get: async () => wrapDoc(await getDoc(ref)), onSnapshot: (n, e) => onSnapshot(ref, s => n(wrapDoc(s)), e) });
+  const colApi = name => { const c = collection(fdb, name); return { doc: id => docApi(id ? doc(c, id) : doc(c)),
+    orderBy: f => ({ onSnapshot: (n, e) => onSnapshot(query(c, orderBy(f)), s => n({ docs: s.docs.map(d => ({ id: d.id, data: () => d.data() })), metadata: s.metadata }), e) }) }; };
+  const DB = { collection: colApi, doc: path => { const [c, id] = path.split("/"); return docApi(doc(fdb, c, id)); } };
+
+  /* ---------- Fotos (verkleinert in der Datenbank) ---------- */
+  const photoCache = new Map(), photoLoading = new Set();
+  function photoUrl(o) {
+    if (!o.photoId) return "";
+    const c = photoCache.get(o.photoId); if (c) return c;
+    if (state.db && !photoLoading.has(o.photoId)) {
+      photoLoading.add(o.photoId);
+      DB.doc("photos/" + o.photoId).get().then(s => { const d = s.exists ? s.data() : null; if (d && typeof d.data === "string" && d.data.startsWith("data:image/")) { photoCache.set(o.photoId, d.data); render(); } }).catch(() => {});
+    }
+    return "";
+  }
+  function writeError(e) {
+    if (e && e.code === "permission-denied") return "Dieses Konto hat keine Berechtigung zum Speichern.";
+    if (e && e.code === "resource-exhausted") return "Das kostenlose Tageskontingent ist aufgebraucht. Morgen geht es wieder.";
+    return "Speichern hat nicht geklappt. Bitte nochmal versuchen.";
+  }
+  async function retry(fn) { try { return await fn(); } catch (e) { if (e && e.code === "unavailable") { await new Promise(r => setTimeout(r, 400 + Math.random() * 600)); return fn(); } throw e; } }
+
+  const yarnSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="#c2477f" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M5.5 8.5c4 1 9 1 13 0M4.5 13c5 1.5 10 1.5 15 0M9 4.6c-1.5 4.5-1.5 10.3 1 15M15 4.6c1.5 4.5 1.5 10.3-1 15"/></svg>';
+  const tickSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+  /* ---------- Darstellung ---------- */
+  function allMonths() {
+    const set = new Set([thisMonth]);
+    state.orders.forEach(o => o.monat && set.add(o.monat));
+    state.expenses.forEach(e => e.monat && set.add(e.monat));
+    return [...set].sort();
+  }
+  function totals(orders, expenses) {
+    const inc = orders.reduce((a, o) => a + (+o.preis || 0), 0);
+    const got = orders.filter(o => o.status === "verkauft").reduce((a, o) => a + (+o.preis || 0), 0);
+    const out = expenses.reduce((a, e) => a + (+e.betrag || 0), 0);
+    return { inc, got, hold: inc - got, out, win: inc - out };
+  }
+
+  function renderPeriod() {
+    const ms = allMonths();
+    $("periodLabel").textContent = state.year ? "Jahr " + state.month.slice(0, 4) : monthLabel(state.month);
+    $("yearToggle").setAttribute("aria-pressed", String(state.year));
+    $("prev").setAttribute("aria-label", state.year ? "Vorheriges Jahr" : "Vorheriger Monat");
+    $("next").setAttribute("aria-label", state.year ? "Nächstes Jahr" : "Nächster Monat");
+    const first = ms[0], last = ms[ms.length - 1] > thisMonth ? ms[ms.length - 1] : thisMonth;
+    if (state.year) {
+      $("prev").disabled = state.month.slice(0, 4) <= first.slice(0, 4);
+      $("next").disabled = state.month.slice(0, 4) >= last.slice(0, 4);
+    } else {
+      $("prev").disabled = state.month <= first;
+      $("next").disabled = state.month >= shiftMonth(last, 1);
+    }
+  }
+
+  function renderOverview() {
+    const os = state.orders.filter(inPeriod), es = state.expenses.filter(inPeriod);
+    const t = totals(os, es);
+    const sold = os.filter(o => o.status === "verkauft").length;
+    $("tIn").textContent = fmt(t.inc);  $("tInS").textContent = os.length + (os.length === 1 ? " Auftrag" : " Aufträge");
+    $("tOut").textContent = fmt(t.out); $("tOutS").textContent = es.length + (es.length === 1 ? " Ausgabe" : " Ausgaben");
+    $("tGot").textContent = fmt(t.got); $("tGotS").textContent = sold + " verkauft";
+    $("tHold").textContent = fmt(t.hold); $("tHoldS").textContent = (os.length - sold) + " offen";
+    $("tWin").textContent = fmt(t.win);
+
+    const stats = PLATFORMS.map(p => {
+      const list = os.filter(o => (o.plattform || "Sonstiges") === p.id);
+      return { ...p, n: list.length, sum: list.reduce((a, o) => a + (+o.preis || 0), 0) };
+    });
+    const max = Math.max(...stats.map(s => s.sum), 0);
+    $("bars").innerHTML = stats.map(s => `
+      <div class="bar-row">
+        <span class="name">${s.id}</span>
+        <div class="bar-track" aria-hidden="true"><div class="bar-fill" style="width:${max ? (s.sum / max * 100).toFixed(1) : 0}%;background:${s.color}"></div></div>
+        <span class="amt num">${fmt(s.sum)}<small>${s.n} ${s.n === 1 ? "Stück" : "Stück"}</small></span>
+      </div>`).join("");
+
+    const ms = allMonths().slice().reverse();
+    $("months").innerHTML = ms.map(m => {
+      const t2 = totals(state.orders.filter(o => o.monat === m), state.expenses.filter(e => e.monat === m));
+      const n = state.orders.filter(o => o.monat === m).length;
+      const cur = !state.year && m === state.month;
+      return `<button class="month-row${cur ? " current" : ""}" data-m="${m}" aria-label="${monthLabel(m)} öffnen">
+        <span class="m">${monthLabel(m)}</span><span class="c">${n} ${n === 1 ? "Auftrag" : "Aufträge"}</span><span class="g num">${fmt(t2.win)}</span></button>`;
+    }).join("");
+  }
+
+  function renderOrders() {
+    const os = state.orders.filter(inPeriod);
+    const counts = { alle: os.length, offen: os.filter(o => o.status !== "verkauft").length, verkauft: os.filter(o => o.status === "verkauft").length };
+    document.querySelectorAll(".filter").forEach(b => {
+      const f = b.dataset.f; b.setAttribute("aria-pressed", String(f === state.filter));
+      b.textContent = { alle: "Alle", offen: "Offen", verkauft: "Verkauft" }[f] + " (" + counts[f] + ")";
+    });
+    const list = os.filter(o => state.filter === "alle" ? true : state.filter === "verkauft" ? o.status === "verkauft" : o.status !== "verkauft");
+    if (!list.length) {
+      $("orderList").innerHTML = `<div class="empty">${!state.loadedO ? "Aufträge werden geladen …" : os.length ? "Keine Aufträge in diesem Filter." : "Noch keine Aufträge in " + esc($("periodLabel").textContent) + ".<br>Tippe auf „+ Auftrag“."}</div>`;
+    } else {
+      $("orderList").innerHTML = list.map(o => {
+        const url = photoUrl(o); const sold = o.status === "verkauft"; const c = platColor(o.plattform);
+        return `<div class="order${sold ? " sold" : ""}">
+          <button class="thumb" data-photo="${esc(url)}" aria-label="${url ? "Foto groß anzeigen" : "Auftrag bearbeiten"}" data-edit="${url ? "" : esc(o.id)}">${url ? `<img src="${esc(url)}" alt="" loading="lazy">` : yarnSvg}</button>
+          <button class="main" data-edit="${esc(o.id)}" aria-label="${esc(o.name)} bearbeiten">
+            <span class="title">${esc(o.name || "Ohne Namen")}</span>
+            <span class="meta"><span class="pill" style="background:${c}22;color:${c}">${esc(o.plattform || "Sonstiges")}</span>${o.kunde ? "<span>" + esc(o.kunde) + "</span>" : ""}${state.year ? "<span>" + esc(monthLabel(o.monat).split(" ")[0]) + "</span>" : ""}</span>
+          </button>
+          <div class="right">
+            <span class="price num">${fmt(o.preis)}</span>
+            <button class="check" data-toggle="${esc(o.id)}" aria-pressed="${sold}" aria-label="${sold ? "Als offen markieren" : "Als verkauft markieren"}" ${state.canWrite ? "" : "disabled"}>${tickSvg}</button>
+          </div>
+        </div>`;
+      }).join("");
+    }
+    const sum = list.reduce((a, o) => a + (+o.preis || 0), 0);
+    $("orderSum").innerHTML = list.length ? `<span>Summe</span><span>${fmt(sum)}</span>` : "";
+  }
+
+  function renderExpenses() {
+    const es = state.expenses.filter(inPeriod);
+    if (!es.length) {
+      $("expList").innerHTML = `<div class="empty">${!state.loadedE ? "Ausgaben werden geladen …" : "Noch keine Ausgaben in " + esc($("periodLabel").textContent) + "."}</div>`;
+    } else {
+      $("expList").innerHTML = es.map(e => `
+        <button class="expense" data-exp="${esc(e.id)}" aria-label="${esc(e.name)} bearbeiten">
+          <span><span class="title">${esc(e.name || "Ausgabe")}</span>${state.year ? `<br><span class="meta">${esc(monthLabel(e.monat))}</span>` : ""}</span>
+          <span class="price num">${fmt(e.betrag)}</span>
+        </button>`).join("");
+    }
+    const sum = es.reduce((a, e) => a + (+e.betrag || 0), 0);
+    $("expSum").innerHTML = es.length ? `<span>Summe</span><span>${fmt(sum)}</span>` : "";
+  }
+
+  function renderNav() {
+    document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === "v-" + state.view));
+    document.querySelectorAll("nav.tabs a").forEach(a => a.dataset.v === state.view ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+    const fab = $("fab");
+    const show = state.canWrite && (state.view === "auftraege" || state.view === "ausgaben" || state.view === "uebersicht");
+    fab.hidden = !show;
+    $("fabLabel").textContent = state.view === "ausgaben" ? "Ausgabe" : "Auftrag";
+    $("period").style.visibility = state.view === "export" ? "hidden" : "visible";
+  }
+
+  function render() { renderPeriod(); renderOverview(); renderOrders(); renderExpenses(); renderNav(); }
+
+  /* ---------- Navigation ---------- */
+  const VIEWS = ["uebersicht", "auftraege", "ausgaben", "export"];
+  function route() { const h = location.hash.replace("#", ""); state.view = VIEWS.includes(h) ? h : "uebersicht"; renderNav(); window.scrollTo(0, 0); }
+  window.addEventListener("hashchange", route);
+  $("prev").onclick = () => { state.month = state.year ? (+state.month.slice(0, 4) - 1) + state.month.slice(4) : shiftMonth(state.month, -1); state.pickedMonth = true; render(); };
+  $("next").onclick = () => { state.month = state.year ? (+state.month.slice(0, 4) + 1) + state.month.slice(4) : shiftMonth(state.month, 1); state.pickedMonth = true; render(); };
+  $("yearToggle").onclick = () => { state.year = !state.year; render(); };
+  $("months").addEventListener("click", e => { const b = e.target.closest("[data-m]"); if (!b) return; state.month = b.dataset.m; state.year = false; state.pickedMonth = true; render(); location.hash = "auftraege"; });
+  document.querySelectorAll(".filter").forEach(b => b.onclick = () => { state.filter = b.dataset.f; renderOrders(); });
+
+  /* ---------- Sheets ---------- */
+  let openSheet = null;
+  function showSheet(id) { openSheet = $(id); $("scrim").classList.add("open"); openSheet.classList.add("open"); openSheet.scrollTop = 0; }
+  function hideSheet() { if (openSheet) openSheet.classList.remove("open"); $("scrim").classList.remove("open"); openSheet = null; }
+  $("scrim").onclick = hideSheet;
+  document.addEventListener("keydown", e => { if (e.key === "Escape") { hideSheet(); $("viewer").classList.remove("open"); } });
+
+  // Auftrag
+  let editOrder = null, oPlat = "Vinted", oSold = false, oPhoto = null, oPhotoBusy = false;
+  $("oPlat").innerHTML = PLATFORMS.map(p => `<button type="button" data-p="${p.id}" aria-pressed="false">${p.id}</button>`).join("");
+  function setPlat(p) { oPlat = p; $("oPlat").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.p === p))); }
+  $("oPlat").onclick = e => { const b = e.target.closest("[data-p]"); if (b) setPlat(b.dataset.p); };
+  function setSold(v) { oSold = v; $("oSold").setAttribute("aria-checked", String(v)); }
+  $("oSold").onclick = () => setSold(!oSold);
+  function setPhotoPreview() {
+    const url = oPhoto ? (oPhoto.url || photoCache.get(oPhoto.id) || "") : "";
+    $("oPhotoPrev").innerHTML = url ? `<img src="${esc(url)}" alt="Foto vom Häkelteil">` : yarnSvg;
+    $("oPhotoRemove").hidden = !url;
+    $("oPhotoBtn").textContent = url ? "Foto ändern" : "Foto wählen";
+  }
+  function openOrder(o) {
+    editOrder = o || null;
+    $("orderSheetTitle").textContent = o ? "Auftrag bearbeiten" : "Neuer Auftrag";
+    $("oName").value = o ? o.name || "" : "";
+    $("oKunde").value = o ? (o.kunde || "") : "";
+    $("oPreis").value = o ? money2(o.preis) : "";
+    $("oMonat").value = o ? o.monat : (state.year ? thisMonth : state.month);
+    $("oNotiz").value = o ? (o.notiz || "") : "";
+    setPlat(o ? (o.plattform || "Sonstiges") : "Vinted");
+    setSold(o ? o.status === "verkauft" : false);
+    oPhoto = o && o.photoId ? { id: o.photoId } : null;
+    setPhotoPreview();
+    $("oPhotoHint").textContent = "";
+    $("oPhotoBtn").style.display = "";
+    $("oErr").textContent = "";
+    const del = $("oDelete"); del.hidden = !o; del.classList.remove("armed"); del.textContent = "Auftrag löschen";
+    showSheet("orderSheet");
+    if (!o) setTimeout(() => $("oName").focus(), 50);
+  }
+  $("oCancel").onclick = hideSheet;
+
+  function compressImage(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const max = 1000, s = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement("canvas"); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        let q = 0.72, url = c.toDataURL("image/jpeg", q);
+        while (url.length > 700000 && q > 0.3) { q -= 0.12; url = c.toDataURL("image/jpeg", q); }
+        resolve(url);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("img")); };
+      img.src = url;
+    });
+  }
+  $("oPhotoInput").onchange = async e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = "";
+    if (!f || !state.db) return;
+    oPhotoBusy = true; $("oSave").disabled = true; $("oPhotoHint").textContent = "Foto wird hochgeladen …";
+    try {
+      const url = await compressImage(f);
+      if (url.length > 900000) throw new Error("big");
+      const ref = DB.collection("photos").doc();
+      await ref.set({ data: url, createdAt: Date.now() });
+      photoCache.set(ref.id, url);
+      oPhoto = { id: ref.id, url }; setPhotoPreview(); $("oPhotoHint").textContent = "";
+    } catch (err) {
+      $("oPhotoHint").textContent = "Foto konnte nicht hochgeladen werden. Versuch ein kleineres Bild.";
+    } finally { oPhotoBusy = false; $("oSave").disabled = false; }
+  };
+  $("oPhotoRemove").onclick = () => { oPhoto = null; setPhotoPreview(); };
+
+  $("orderForm").onsubmit = async e => {
+    e.preventDefault();
+    if (oPhotoBusy) return;
+    const name = $("oName").value.trim(), preis = parseMoney($("oPreis").value), monat = $("oMonat").value;
+    if (!name) { $("oErr").textContent = "Gib einen Namen für den Auftrag ein."; $("oName").focus(); return; }
+    if (isNaN(preis) || preis < 0) { $("oErr").textContent = "Gib einen gültigen Preis ein, z. B. 9,99."; $("oPreis").focus(); return; }
+    if (!/^\d{4}-\d{2}$/.test(monat)) { $("oErr").textContent = "Wähle einen Monat."; return; }
+    if (!state.db) { $("oErr").textContent = "Keine Verbindung zum Speicher."; return; }
+    const body = {
+      name, kunde: $("oKunde").value.trim(), preis, plattform: oPlat, monat,
+      status: oSold ? "verkauft" : "offen", notiz: $("oNotiz").value.trim(),
+      photoId: oPhoto ? oPhoto.id : null,
+      createdAt: editOrder ? (editOrder.createdAt || Date.now()) : Date.now(), updatedAt: Date.now()
+    };
+    $("oSave").disabled = true;
+    try {
+      const ref = editOrder ? state.db.collection("orders").doc(editOrder.id) : state.db.collection("orders").doc();
+      await retry(() => ref.set(body));
+      if (editOrder && editOrder.photoId && editOrder.photoId !== body.photoId) DB.doc("photos/" + editOrder.photoId).delete().catch(() => {});
+      hideSheet(); toast(editOrder ? "Auftrag gespeichert" : "Auftrag hinzugefügt");
+      if (monat !== state.month && !state.year) { state.month = monat; render(); }
+    } catch (err) { $("oErr").textContent = writeError(err); }
+    finally { $("oSave").disabled = false; }
+  };
+  $("oDelete").onclick = async () => {
+    const b = $("oDelete");
+    if (!b.classList.contains("armed")) { b.classList.add("armed"); b.textContent = "Wirklich löschen? Nochmal tippen"; return; }
+    try { await retry(() => state.db.collection("orders").doc(editOrder.id).delete()); if (editOrder.photoId) DB.doc("photos/" + editOrder.photoId).delete().catch(() => {}); hideSheet(); toast("Auftrag gelöscht"); }
+    catch (err) { $("oErr").textContent = writeError(err); }
+  };
+
+  // Ausgabe
+  let editExp = null;
+  function openExp(x) {
+    editExp = x || null;
+    $("expSheetTitle").textContent = x ? "Ausgabe bearbeiten" : "Neue Ausgabe";
+    $("eName").value = x ? x.name || "" : "";
+    $("eBetrag").value = x ? money2(x.betrag) : "";
+    $("eMonat").value = x ? x.monat : (state.year ? thisMonth : state.month);
+    $("eErr").textContent = "";
+    const del = $("eDelete"); del.hidden = !x; del.classList.remove("armed"); del.textContent = "Ausgabe löschen";
+    $("eDelete").disabled = !state.canWrite; $("eSave").disabled = !state.canWrite;
+    showSheet("expSheet");
+    if (!x) setTimeout(() => $("eName").focus(), 50);
+  }
+  $("eCancel").onclick = hideSheet;
+  $("expForm").onsubmit = async e => {
+    e.preventDefault();
+    const name = $("eName").value.trim(), betrag = parseMoney($("eBetrag").value), monat = $("eMonat").value;
+    if (!name) { $("eErr").textContent = "Gib ein, wofür die Ausgabe war."; $("eName").focus(); return; }
+    if (isNaN(betrag) || betrag < 0) { $("eErr").textContent = "Gib einen gültigen Betrag ein, z. B. 12,00."; $("eBetrag").focus(); return; }
+    if (!/^\d{4}-\d{2}$/.test(monat)) { $("eErr").textContent = "Wähle einen Monat."; return; }
+    if (!state.db) { $("eErr").textContent = "Keine Verbindung zum Speicher."; return; }
+    const body = { name, betrag, monat, createdAt: editExp ? (editExp.createdAt || Date.now()) : Date.now(), updatedAt: Date.now() };
+    $("eSave").disabled = true;
+    try {
+      const ref = editExp ? state.db.collection("expenses").doc(editExp.id) : state.db.collection("expenses").doc();
+      await retry(() => ref.set(body));
+      hideSheet(); toast(editExp ? "Ausgabe gespeichert" : "Ausgabe hinzugefügt");
+      if (monat !== state.month && !state.year) { state.month = monat; render(); }
+    } catch (err) { $("eErr").textContent = writeError(err); }
+    finally { $("eSave").disabled = false; }
+  };
+  $("eDelete").onclick = async () => {
+    const b = $("eDelete");
+    if (!b.classList.contains("armed")) { b.classList.add("armed"); b.textContent = "Wirklich löschen? Nochmal tippen"; return; }
+    try { await retry(() => state.db.collection("expenses").doc(editExp.id).delete()); hideSheet(); toast("Ausgabe gelöscht"); }
+    catch (err) { $("eErr").textContent = writeError(err); }
+  };
+
+  $("fab").onclick = () => state.view === "ausgaben" ? openExp(null) : openOrder(null);
+
+  // Listen-Klicks
+  const busyToggle = new Set();
+  $("orderList").addEventListener("click", async e => {
+    const t = e.target.closest("[data-toggle]");
+    if (t) {
+      const id = t.dataset.toggle; if (busyToggle.has(id) || !state.db) return;
+      const o = state.orders.find(x => x.id === id); if (!o) return;
+      busyToggle.add(id);
+      const next = o.status === "verkauft" ? "offen" : "verkauft";
+      try { await retry(() => state.db.collection("orders").doc(id).update({ status: next, updatedAt: Date.now() })); toast(next === "verkauft" ? "Als verkauft markiert" : "Wieder offen"); }
+      catch (err) { toast(writeError(err)); }
+      finally { busyToggle.delete(id); }
+      return;
+    }
+    const p = e.target.closest("[data-photo]");
+    if (p && p.dataset.photo) { $("viewerImg").src = p.dataset.photo; $("viewer").classList.add("open"); return; }
+    const ed = e.target.closest("[data-edit]");
+    if (ed && ed.dataset.edit) { const o = state.orders.find(x => x.id === ed.dataset.edit); if (o) openOrder(o); }
+  });
+  $("expList").addEventListener("click", e => { const b = e.target.closest("[data-exp]"); if (!b) return; const x = state.expenses.find(y => y.id === b.dataset.exp); if (x) openExp(x); });
+  $("viewer").onclick = e => { if (e.target.id !== "viewerImg") $("viewer").classList.remove("open"); };
+
+  /* ---------- Excel-Datei ---------- */
+  function buildXlsx() {
+    const d = new Date();
+    const updatedText = "Stand " + d.toLocaleDateString("de-AT") + ", " + d.toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" });
+    return window.ArtXlsx.build({ orders: state.orders, expenses: state.expenses, months: allMonths(), monthLabel, totals, updatedText });
+  }
+  $("exportBtn").onclick = async () => {
+    if (!window.ArtXlsx) { $("exportHint").textContent = "Excel-Funktion konnte nicht geladen werden. Lade die Seite neu."; return; }
+    const name = "Firmenbuch_ArtRooomM_" + new Date().toISOString().slice(0, 10) + ".xlsx";
+    const file = new File([buildXlsx()], name, { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); $("exportHint").textContent = ""; return; }
+      const a = document.createElement("a"); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+      $("exportHint").textContent = "Excel-Datei gespeichert.";
+    } catch (err) {
+      $("exportHint").textContent = err && err.name === "AbortError" ? "Abgebrochen." : "Speichern hat nicht geklappt.";
+    }
+  };
+
+  /* ---------- Microsoft-Anmeldung (PKCE, ohne Bibliothek) ---------- */
+  const MS_CLIENT_ID = CFG.msClientId || "";
+  const MS_BASE = "https://login.microsoftonline.com/consumers/oauth2/v2.0";
+  const MS_SCOPES = "Files.ReadWrite User.Read offline_access";
+  const REDIRECT = location.origin + location.pathname;
+  const LS = {
+    get: k => { try { return localStorage.getItem(k); } catch { return null; } },
+    set: (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} }
+  };
+  const b64url = buf => { let s = ""; new Uint8Array(buf).forEach(b => s += String.fromCharCode(b)); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); };
+  const randStr = n => b64url(crypto.getRandomValues(new Uint8Array(n)));
+  async function msLogin() {
+    if (!MS_CLIENT_ID) { toast("Microsoft ist noch nicht eingerichtet."); return; }
+    const verifier = randStr(48), st = randStr(16);
+    const challenge = b64url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)));
+    LS.set("ms_verifier", verifier); LS.set("ms_state", st); LS.set("ms_return", location.hash || "#export");
+    const p = new URLSearchParams({ client_id: MS_CLIENT_ID, response_type: "code", redirect_uri: REDIRECT, scope: MS_SCOPES,
+      code_challenge: challenge, code_challenge_method: "S256", state: st, prompt: "select_account" });
+    location.href = MS_BASE + "/authorize?" + p;
+  }
+  async function msToken(params) {
+    const r = await fetch(MS_BASE + "/token", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ client_id: MS_CLIENT_ID, scope: MS_SCOPES, ...params }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.access_token) { const e = new Error(j.error_description || "token"); e.code = "ms_login"; throw e; }
+    LS.set("ms_tok", JSON.stringify({ at: j.access_token, rt: j.refresh_token || null, exp: Date.now() + (Math.max(300, j.expires_in || 3600) - 120) * 1000 }));
+    return j.access_token;
+  }
+  async function msHandleRedirect() {
+    const u = new URL(location.href);
+    const code = u.searchParams.get("code"), st = u.searchParams.get("state"), err = u.searchParams.get("error");
+    if (!code && !err) return;
+    history.replaceState(null, "", REDIRECT + (LS.get("ms_return") || "#export"));
+    route();
+    if (err) { toast("Microsoft-Anmeldung abgebrochen"); return; }
+    if (!st || st !== LS.get("ms_state")) { toast("Microsoft-Anmeldung ungültig. Bitte nochmal versuchen."); return; }
+    try { await msToken({ grant_type: "authorization_code", code, redirect_uri: REDIRECT, code_verifier: LS.get("ms_verifier") || "" }); toast("Mit Microsoft verbunden"); }
+    catch { toast("Microsoft-Anmeldung hat nicht geklappt. Bitte nochmal versuchen."); }
+    LS.set("ms_verifier", null); LS.set("ms_state", null); LS.set("ms_return", null);
+  }
+  async function msAccess(force) {
+    let t = null; try { t = JSON.parse(LS.get("ms_tok")); } catch {}
+    const fail = () => { const e = new Error("login"); e.code = "ms_login"; return e; };
+    if (!t) throw fail();
+    if (!force && t.exp > Date.now()) return t.at;
+    if (!t.rt) { LS.set("ms_tok", null); throw fail(); }
+    try { return await msToken({ grant_type: "refresh_token", refresh_token: t.rt }); }
+    catch { LS.set("ms_tok", null); throw fail(); }
+  }
+  async function graph(method, path, body, binary) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const token = await msAccess(attempt > 0);
+      const headers = { Authorization: "Bearer " + token };
+      if (body) headers["Content-Type"] = binary ? "application/octet-stream" : "application/json";
+      const r = await fetch("https://graph.microsoft.com/v1.0" + path, { method, headers, body: body ? (binary ? body : JSON.stringify(body)) : undefined });
+      if (r.status === 401 && attempt === 0) continue;
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        const e = new Error((j.error && j.error.message) || ("HTTP " + r.status));
+        e.status = r.status;
+        e.code = (r.status === 423 || /lock/i.test(e.message)) ? "locked" : r.status === 404 ? "not_found" : r.status === 429 ? "throttled" : "graph";
+        throw e;
+      }
+      if (r.status === 204) return null;
+      return (r.headers.get("content-type") || "").includes("json") ? r.json() : new Uint8Array(await r.arrayBuffer());
+    }
+  }
+
+  /* ---------- Abgleich mit der Excel auf OneDrive ---------- */
+  const XL_FILE = "Firmenbuch_ArtRooomM_App.xlsx";
+  const XL_PATH = "/me/drive/root:/" + encodeURIComponent(XL_FILE);
+  const SHEET = "Firmenbuch";
+  const AX = () => window.ArtXlsx;
+  const TAB_ID = "t" + Math.random().toString(36).slice(2, 10);
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const xl = { connected: false, meta: null, metaLoaded: false, dataReady: false, busy: false, blocked: "", failedHash: "", timer: null, msg: "", tone: "", lastCheck: 0, me: null };
+  function dataHash() {
+    const pick = [
+      state.orders.map(o => [o.id, o.name, o.kunde, +o.preis, o.plattform, o.monat, o.status, o.createdAt]),
+      state.expenses.map(e => [e.id, e.name, +e.betrag, e.monat, e.createdAt])
+    ];
+    const str = JSON.stringify(pick); let h = 0x811c9dc5;
+    for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+    return h.toString(16);
+  }
+  const timeText = ms => { const d = new Date(ms); return d.toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" }); };
+  function renderXl() {
+    const st = $("xlState"), mini = $("xlMini");
+    const upToDate = xl.meta && xl.dataReady && xl.meta.hash === dataHash();
+    let text, tone = "";
+    if (!MS_CLIENT_ID) text = "Der Microsoft-Abgleich ist noch nicht eingerichtet.";
+    else if (xl.busy) text = "Excel wird abgeglichen …";
+    else if (xl.msg) { text = xl.msg; tone = xl.tone; }
+    else if (!xl.connected) text = xl.meta ? "Zuletzt abgeglichen: " + timeText(xl.meta.at) + ". Der Abgleich läuft auf dem Gerät, das mit Microsoft verbunden ist. Michael kann es hier mit „Mit Microsoft verbinden“ einrichten." : "Dieses Gerät ist nicht mit Microsoft verbunden. Michael verbindet einmal sein Microsoft-Konto, danach gleicht die App die Excel automatisch ab.";
+    else if (upToDate) { text = "Excel ist aktuell (" + timeText(xl.meta.at) + ")"; tone = "ok"; }
+    else text = "Änderungen werden gleich übertragen …";
+    st.textContent = text; st.className = "xl-state" + (tone ? " " + tone : "");
+    mini.textContent = xl.busy ? "Excel wird abgeglichen …" : (xl.connected && upToDate) ? "Excel ✓ aktuell" : (xl.tone === "warn" ? "Excel nicht aktuell" : "");
+    $("msConnect").hidden = !MS_CLIENT_ID || xl.connected || !state.db;
+    $("xlSyncBtn").hidden = !xl.connected || !state.db;
+    $("xlSyncBtn").disabled = xl.busy || !xl.dataReady;
+    const a = $("xlOpen");
+    if (xl.meta && typeof xl.meta.webUrl === "string" && /^https:\/\//.test(xl.meta.webUrl)) { a.href = xl.meta.webUrl; a.hidden = false; } else a.hidden = true;
+  }
+  function scheduleXl() {
+    renderXl();
+    if (!xl.connected || !xl.dataReady || !xl.metaLoaded || xl.busy || xl.blocked) return;
+    const h = dataHash();
+    if (xl.meta && xl.meta.hash === h && xl.meta.v === AX().LAYOUT_VERSION) {
+      xl.msg = ""; xl.tone = ""; renderXl();
+      if (!xl.lastCheck) { xl.lastCheck = 1; setTimeout(() => syncXl(false, true), 1200); }
+      return;
+    }
+    if (h === xl.failedHash) return;
+    clearTimeout(xl.timer);
+    xl.timer = setTimeout(() => syncXl(false, false), 2500);
+  }
+  async function acquireLock() {
+    try {
+      return await runTransaction(fdb, async tx => {
+        const ref = doc(fdb, "meta", "lock");
+        const s = await tx.get(ref);
+        const d = s.exists() ? s.data() : null;
+        if (d && d.until > Date.now() && d.holder !== TAB_ID) return false;
+        tx.set(ref, { holder: TAB_ID, until: Date.now() + 45000 });
+        return true;
+      });
+    } catch { return true; }
+  }
+  async function readExcel(item) {
+    try {
+      const r = await graph("GET", `/me/drive/items/${item.id}/workbook/worksheets('${SHEET}')/usedRange(valuesOnly=true)?$select=address,values`);
+      const m = String(r.address || "").match(/!?\$?([A-Z]+)\$?(\d+)/);
+      let col = 0; if (m) for (const ch of m[1]) col = col * 26 + ch.charCodeAt(0) - 64;
+      return { rows: AX().gridToRows(r.values || [], m ? +m[2] : 1, m ? col - 1 : 0), mode: "workbook" };
+    } catch (e) {
+      if (e.code === "ms_login" || e.code === "throttled") throw e;
+      // Ersatzweg: ganze Datei laden und selbst lesen
+      const info = await graph("GET", `/me/drive/items/${item.id}`);
+      const url = info && info["@microsoft.graph.downloadUrl"];
+      if (!url) throw e;
+      const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
+      return { rows: await AX().readXlsxRows(bytes), mode: "file" };
+    }
+  }
+  async function writeValues(item, want) {
+    const base = `/me/drive/items/${item.id}/workbook/worksheets('${SHEET}')`;
+    await graph("PATCH", `${base}/range(address='B${want.r0}:L${want.r1}')`, { values: want.BL });
+    await graph("PATCH", `${base}/range(address='O${want.r0}:P${want.r1}')`, { values: want.OP });
+  }
+  async function applyExcel(parsed) {
+    const m = xl.meta;
+    let n = 0, t = Date.now();
+    const oFields = r => ({ name: r.name, kunde: r.kunde, preis: r.preis, plattform: r.plattform, monat: r.monat, status: r.status, updatedAt: Date.now() });
+    const eFields = r => ({ name: r.name, betrag: r.betrag, monat: r.monat, updatedAt: Date.now() });
+    const validId = id => /^[A-Za-z0-9_\-]{1,100}$/.test(id || "");
+    if (!m || !m.lastO || m.v !== AX().LAYOUT_VERSION) {
+      // Erster Abgleich: leere Datenbank aus der Excel füllen (Umzug aus der bisherigen App)
+      if (state.orders.length || state.expenses.length) return 0;
+      for (const r of parsed.orders) { await retry(() => DB.collection("orders").doc(validId(r.id) ? r.id : undefined).set({ ...oFields(r), notiz: "", photoId: null, createdAt: t++ })); n++; }
+      for (const r of parsed.expenses) { await retry(() => DB.collection("expenses").doc(validId(r.id) ? r.id : undefined).set({ ...eFields(r), createdAt: t++ })); n++; }
+      if (n) await sleep(1200);
+      return n;
+    }
+    const plan = AX().planMerge({ orders: state.orders, expenses: state.expenses, excel: parsed, lastO: m.lastO, lastE: m.lastE });
+    for (const c of plan.orders.creates) { await retry(() => DB.collection("orders").doc().set({ ...oFields(c.row), notiz: "", photoId: null, createdAt: t++ })); n++; }
+    for (const u of plan.orders.updates) { await retry(() => DB.collection("orders").doc(u.id).update(oFields(u.row))); n++; }
+    for (const d of plan.orders.deletes) { await retry(() => DB.collection("orders").doc(d.id).delete()); n++; }
+    for (const c of plan.expenses.creates) { await retry(() => DB.collection("expenses").doc().set({ ...eFields(c.row), createdAt: t++ })); n++; }
+    for (const u of plan.expenses.updates) { await retry(() => DB.collection("expenses").doc(u.id).update(eFields(u.row))); n++; }
+    for (const d of plan.expenses.deletes) { await retry(() => DB.collection("expenses").doc(d.id).delete()); n++; }
+    if (n) await sleep(1000);
+    return n;
+  }
+  async function syncXl(manual, checkOnly) {
+    if (!xl.connected || xl.busy || !xl.dataReady || !xl.metaLoaded || !AX()) return;
+    clearTimeout(xl.timer);
+    xl.busy = true; xl.lastCheck = Date.now(); if (!checkOnly) xl.msg = ""; renderXl();
+    let h = dataHash();
+    try {
+      if (!(await acquireLock())) { setTimeout(() => syncXl(manual, checkOnly), 20000); return; }
+      if (!xl.me) xl.me = await graph("GET", "/me?$select=id,displayName");
+      if (xl.meta && xl.meta.msUser && xl.meta.msUser !== xl.me.id) {
+        xl.blocked = "account"; xl.tone = "warn";
+        xl.msg = "Dieses Microsoft-Konto ist nicht das, auf dessen OneDrive die Excel liegt. Bitte mit Michaels Microsoft-Konto verbinden.";
+        return;
+      }
+      let item = null;
+      try { item = await graph("GET", XL_PATH + "?$select=id,webUrl,name"); } catch (e) { if (e.code !== "not_found") throw e; }
+      let imported = 0, rows = null, mode = null;
+      if (item) {
+        ({ rows, mode } = await readExcel(item));
+        const parsed = AX().parseRows(rows, thisMonth);
+        if (!parsed.orders) { const e = new Error("sheets"); e.code = "sheets_missing"; throw e; }
+        imported = await applyExcel(parsed);
+      }
+      h = dataHash();
+      const layoutOk = xl.meta && xl.meta.v === AX().LAYOUT_VERSION && xl.meta.lastO;
+      if (checkOnly && !imported && item && layoutOk && xl.meta.hash === h) return;
+      let wrote = false;
+      if (item && mode === "workbook") {
+        const want = AX().valuesForLayout(AX().fileBlocks(rows), state.orders, state.expenses);
+        if (want) { if (AX().gridDiffers(rows, want)) await writeValues(item, want); wrote = true; }
+      }
+      if (!wrote) item = await graph("PUT", XL_PATH + ":/content", buildXlsx(), true);
+      const body = { v: AX().LAYOUT_VERSION, hash: h, at: Date.now(), webUrl: (item && item.webUrl) || (xl.meta && xl.meta.webUrl) || null,
+        itemId: item ? item.id : null, msUser: xl.me.id,
+        lastO: AX().lastMap(state.orders, AX().rowHashO), lastE: AX().lastMap(state.expenses, AX().rowHashE) };
+      xl.meta = body;
+      try { await DB.doc("meta/excel").set(body); } catch {}
+      xl.blocked = ""; xl.failedHash = ""; xl.msg = ""; xl.tone = "";
+      if (imported) toast(imported === 1 ? "1 Änderung aus der Excel übernommen" : imported + " Änderungen aus der Excel übernommen");
+      else if (manual) toast("Excel ist abgeglichen");
+    } catch (err) {
+      const code = err && err.code;
+      xl.failedHash = h; xl.tone = "warn";
+      if (code === "ms_login") { xl.connected = false; xl.me = null; xl.tone = ""; xl.msg = "Die Microsoft-Anmeldung ist abgelaufen. Tippe auf „Mit Microsoft verbinden“, das geht meist ohne Passwort."; }
+      else if (code === "locked") xl.msg = "Für einen neuen Monat muss die Excel kurz neu angelegt werden. Das geht nur, wenn sie nirgends geöffnet ist. Schließ sie kurz, die App versucht es jede Minute wieder.";
+      else if (code === "sheets_missing") { xl.blocked = code; xl.msg = "In der Excel wurde die Überschrift „Aufträge“ (Zelle B3) nicht gefunden. Stell sie wieder her und tippe dann auf „Excel jetzt abgleichen“."; }
+      else if (code === "throttled") xl.msg = "Microsoft bremst gerade. Die App versucht es gleich wieder.";
+      else if (code === "permission-denied") xl.msg = "Keine Berechtigung zum Speichern.";
+      else xl.msg = "Abgleich hat nicht geklappt (" + String(err && err.message || "Fehler").slice(0, 80) + "). Die App versucht es jede Minute wieder.";
+    } finally { xl.busy = false; renderXl(); setTimeout(scheduleXl, 0); }
+  }
+  $("xlSyncBtn").onclick = () => { xl.blocked = ""; xl.failedHash = ""; syncXl(true, false); };
+  $("msConnect").onclick = () => msLogin();
+  // Regelmäßig nachsehen, ob in der Excel etwas geändert wurde
+  function checkExcel() {
+    if (!xl.connected || xl.blocked || xl.busy || !xl.dataReady || !xl.metaLoaded || document.hidden) return;
+    if (Date.now() - (xl.lastCheck || 0) < 45000) return;
+    xl.failedHash = "";
+    syncXl(false, true);
+  }
+  setInterval(checkExcel, 60000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) checkExcel(); });
+
+  /* ---------- Anmeldung ---------- */
+  const show = (id, on) => { $(id).hidden = !on; };
+  function authView(view, user) {
+    show("auth", view !== "app");
+    show("authForm", view === "login");
+    show("verifyBox", view === "verify");
+    show("deniedBox", view === "denied");
+    if (user) { $("vMail").textContent = user.email; $("dMail").textContent = user.email; }
+  }
+  const authMsg = e => {
+    const c = e && e.code || "";
+    if (c === "auth/invalid-credential" || c === "auth/wrong-password" || c === "auth/user-not-found" || c === "auth/invalid-login-credentials") return "E-Mail oder Passwort stimmt nicht.";
+    if (c === "auth/invalid-email") return "Bitte eine gültige E-Mail-Adresse eingeben.";
+    if (c === "auth/email-already-in-use") return "Für diese E-Mail gibt es schon ein Konto. Melde dich an oder tippe auf „Passwort vergessen?“.";
+    if (c === "auth/weak-password") return "Das Passwort braucht mindestens 6 Zeichen.";
+    if (c === "auth/too-many-requests") return "Zu viele Versuche. Bitte kurz warten.";
+    if (c === "auth/network-request-failed") return "Keine Internetverbindung.";
+    return "Das hat nicht geklappt. Bitte nochmal versuchen.";
+  };
+  const creds = () => ({ email: $("aEmail").value.trim(), pass: $("aPass").value });
+  $("authForm").onsubmit = async e => {
+    e.preventDefault(); $("aErr").textContent = ""; $("aInfo").textContent = "";
+    const { email, pass } = creds();
+    if (!email || !pass) { $("aErr").textContent = "Bitte E-Mail und Passwort eingeben."; return; }
+    $("aLogin").disabled = true;
+    try { await signInWithEmailAndPassword(auth, email, pass); } catch (err) { $("aErr").textContent = authMsg(err); } finally { $("aLogin").disabled = false; }
+  };
+  $("aRegister").onclick = async () => {
+    $("aErr").textContent = ""; $("aInfo").textContent = "";
+    const { email, pass } = creds();
+    if (!email || pass.length < 6) { $("aErr").textContent = "Bitte E-Mail und ein Passwort mit mindestens 6 Zeichen eingeben, dann auf „Neues Konto erstellen“ tippen."; return; }
+    $("aRegister").disabled = true;
+    try { const c = await createUserWithEmailAndPassword(auth, email, pass); await sendEmailVerification(c.user); }
+    catch (err) { $("aErr").textContent = authMsg(err); } finally { $("aRegister").disabled = false; }
+  };
+  $("aReset").onclick = async () => {
+    $("aErr").textContent = ""; $("aInfo").textContent = "";
+    const { email } = creds();
+    if (!email) { $("aErr").textContent = "Gib zuerst deine E-Mail-Adresse ein."; return; }
+    try { await sendPasswordResetEmail(auth, email); $("aInfo").textContent = "Falls es ein Konto gibt, kommt gleich eine E-Mail zum Zurücksetzen."; }
+    catch (err) { $("aErr").textContent = authMsg(err); }
+  };
+  $("vDone").onclick = async () => {
+    $("vErr").textContent = "";
+    try {
+      await auth.currentUser.reload();
+      if (!auth.currentUser.emailVerified) { $("vErr").textContent = "Noch nicht bestätigt. Tippe zuerst auf den Link in der E-Mail."; return; }
+      await auth.currentUser.getIdToken(true);
+      onUser(auth.currentUser);
+    } catch (err) { $("vErr").textContent = authMsg(err); }
+  };
+  $("vResend").onclick = async () => { try { await sendEmailVerification(auth.currentUser); $("vErr").textContent = "E-Mail wurde nochmal gesendet."; } catch (err) { $("vErr").textContent = authMsg(err); } };
+  const doLogout = async () => { try { await signOut(auth); } catch {} location.reload(); };
+  $("vLogout").onclick = doLogout; $("dLogout").onclick = doLogout; $("logoutBtn").onclick = doLogout;
+
+  /* ---------- Daten ---------- */
+  function pickStartMonth() {
+    if (state.pickedMonth) return;
+    const ms = new Set(state.orders.map(o => o.monat));
+    if (!ms.has(thisMonth) && ms.size) state.month = [...ms].sort().pop();
+  }
+  function denied(user) { authView("denied", user); }
+  function onUser(user) {
+    if (!user) { authView("login"); return; }
+    if (!user.emailVerified) { authView("verify", user); return; }
+    authView("app", user);
+    $("acctMail").textContent = user.email;
+    if (state.db) return;
+    state.db = DB;
+    let timer = setTimeout(() => setSync("Daten noch nicht erreichbar …", true), 10000);
+    let gotO = false, gotE = false;
+    const done = () => { if (gotO && gotE) { clearTimeout(timer); setSync("Gespeichert & synchron"); xl.dataReady = true; scheduleXl(); } };
+    const onErr = what => err => {
+      clearTimeout(timer);
+      if (err && err.code === "permission-denied") { denied(user); return; }
+      setSync(what + " konnten nicht geladen werden", true); render();
+    };
+    DB.collection("orders").orderBy("createdAt").onSnapshot(snap => {
+      state.orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      state.loadedO = true;
+      if (!snap.metadata.fromCache) { gotO = true; pickStartMonth(); done(); }
+      render(); scheduleXl();
+    }, onErr("Aufträge"));
+    DB.collection("expenses").orderBy("createdAt").onSnapshot(snap => {
+      state.expenses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      state.loadedE = true;
+      if (!snap.metadata.fromCache) { gotE = true; done(); }
+      render(); scheduleXl();
+    }, onErr("Ausgaben"));
+    DB.doc("meta/excel").onSnapshot(snap => {
+      const d = snap.exists ? snap.data() : null;
+      xl.meta = d && typeof d.hash === "string" ? d : null;
+      if (!snap.metadata.fromCache) xl.metaLoaded = true;
+      scheduleXl();
+    }, () => { xl.metaLoaded = true; renderXl(); });
+    render(); renderXl();
+  }
+  async function init() {
+    route(); render(); renderXl();
+    await msHandleRedirect();
+    xl.connected = !!MS_CLIENT_ID && !!LS.get("ms_tok");
+    renderXl();
+    onAuthStateChanged(auth, onUser);
+  }
+  init();
+})();
+</script>
+</body>
+</html>
