@@ -247,6 +247,12 @@ form.f { display: grid; gap: 14px; }
       <button type="button" class="btn ghost" id="vResend">E-Mail nochmal senden</button>
       <button type="button" class="linkbtn" id="vLogout">Mit anderem Konto anmelden</button>
     </div>
+    <div class="box" id="resetBox" hidden>
+      <p><b>Neues Passwort</b> für <span id="rMail"></span></p>
+      <div class="field"><label for="rPass">Neues Passwort</label><input type="password" id="rPass" autocomplete="new-password"></div>
+      <p class="err" id="rErr" role="alert"></p>
+      <button type="button" class="btn primary" id="rSave">Passwort speichern</button>
+    </div>
     <div class="box" id="deniedBox" hidden>
       <p><b>Kein Zugriff.</b> Das Konto <span id="dMail"></span> ist für das ArtRooomM-Firmenbuch nicht freigeschaltet.</p>
       <button type="button" class="btn ghost" id="dLogout">Mit anderem Konto anmelden</button>
@@ -408,7 +414,7 @@ form.f { display: grid; gap: 14px; }
 <script src="xlsxgen.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, signOut, applyActionCode, verifyPasswordResetCode, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, query, orderBy, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 (() => {
   "use strict";
@@ -1041,6 +1047,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
     show("authForm", view === "login");
     show("verifyBox", view === "verify");
     show("deniedBox", view === "denied");
+    show("resetBox", view === "reset");
     if (user) { $("vMail").textContent = user.email; $("dMail").textContent = user.email; }
   }
   const authMsg = e => {
@@ -1097,6 +1104,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
   }
   function denied(user) { authView("denied", user); }
   function onUser(user) {
+    if (resetCode) { authView("reset"); return; }
     if (!user) { authView("login"); return; }
     if (!user.emailVerified) { authView("verify", user); return; }
     authView("app", user);
@@ -1131,8 +1139,35 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
     }, () => { xl.metaLoaded = true; renderXl(); });
     render(); renderXl();
   }
+  /* Links aus Firebase-E-Mails (Bestätigen / Passwort zurücksetzen) direkt in der App erledigen */
+  let resetCode = null;
+  async function handleActionLink() {
+    const u = new URL(location.href);
+    const mode = u.searchParams.get("mode"), code = u.searchParams.get("oobCode");
+    if (!mode || !code) return;
+    history.replaceState(null, "", REDIRECT);
+    if (mode === "verifyEmail") {
+      try {
+        await applyActionCode(auth, code);
+        if (auth.currentUser) { await auth.currentUser.reload(); await auth.currentUser.getIdToken(true); }
+        $("aInfo").textContent = "✅ E-Mail bestätigt! Melde dich jetzt mit E-Mail und Passwort an.";
+        toast("E-Mail bestätigt");
+      } catch { $("aErr").textContent = "Der Bestätigungslink ist ungültig oder schon benutzt. Melde dich an und lass dir eine neue E-Mail schicken."; }
+    } else if (mode === "resetPassword") {
+      try { const email = await verifyPasswordResetCode(auth, code); resetCode = code; $("rMail").textContent = email; }
+      catch { $("aErr").textContent = "Der Link zum Zurücksetzen ist ungültig oder abgelaufen. Tippe nochmal auf „Passwort vergessen?“."; }
+    }
+  }
+  $("rSave").onclick = async () => {
+    $("rErr").textContent = "";
+    const pw = $("rPass").value;
+    if (pw.length < 6) { $("rErr").textContent = "Das Passwort braucht mindestens 6 Zeichen."; return; }
+    try { await confirmPasswordReset(auth, resetCode, pw); resetCode = null; $("aInfo").textContent = "✅ Passwort geändert. Melde dich jetzt an."; authView("login"); }
+    catch (err) { $("rErr").textContent = authMsg(err); }
+  };
   async function init() {
     route(); render(); renderXl();
+    await handleActionLink();
     await msHandleRedirect();
     xl.connected = !!MS_CLIENT_ID && !!LS.get("ms_tok");
     renderXl();
