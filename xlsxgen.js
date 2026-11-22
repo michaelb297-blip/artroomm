@@ -478,7 +478,7 @@
     };
   }
 
-  const LAYOUT_VERSION = 3;
+  const LAYOUT_VERSION = 4;
   const api = { build, toBase64, parseRead, parseRows, parseGrid, gridToRows, fileBlocks, valuesForLayout, gridDiffers, readXlsxRows, planMerge, rowHashO, rowHashE, lastMap, LAYOUT_VERSION };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.ArtXlsx = api;
 })(typeof window !== "undefined" ? window : globalThis);

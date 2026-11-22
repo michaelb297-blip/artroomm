@@ -878,6 +878,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
   const XL_PATH = "/me/drive/root:/" + encodeURIComponent(XL_FILE);
   const SHEET = "Firmenbuch";
   const AX = () => window.ArtXlsx;
+  const flat = v => String(v ?? "").replace(/[\t\r\n]+/g, " ").trim();
   const TAB_ID = "t" + Math.random().toString(36).slice(2, 10);
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const xl = { connected: false, meta: null, metaLoaded: false, dataReady: false, busy: false, blocked: "", failedHash: "", timer: null, msg: "", tone: "", lastCheck: 0, me: null };
@@ -962,11 +963,21 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
     const eFields = r => ({ name: r.name, betrag: r.betrag, monat: r.monat, updatedAt: Date.now() });
     const validId = id => /^[A-Za-z0-9_\-]{1,100}$/.test(id || "");
     if (!m || !m.lastO || m.v !== AX().LAYOUT_VERSION) {
-      // Erster Abgleich: leere Datenbank aus der Excel füllen (Umzug aus der bisherigen App)
-      if (state.orders.length || state.expenses.length) return 0;
-      for (const r of parsed.orders) { await retry(() => DB.collection("orders").doc(validId(r.id) ? r.id : undefined).set({ ...oFields(r), notiz: "", photoId: null, createdAt: t++ })); n++; }
-      for (const r of parsed.expenses) { await retry(() => DB.collection("expenses").doc(validId(r.id) ? r.id : undefined).set({ ...eFields(r), createdAt: t++ })); n++; }
-      if (n) await sleep(1200);
+      // Erster Abgleich (oder unterbrochener Umzug): alles aus der Excel übernehmen, was in der Datenbank noch fehlt.
+      // Einträge mit ID werden unter derselben ID angelegt – mehrfaches Ausführen erzeugt keine Doppelten.
+      const haveO = new Set(state.orders.map(o => o.id)), haveE = new Set(state.expenses.map(e => e.id));
+      const keyO = o => [flat(o.name).toLowerCase(), (+o.preis || 0).toFixed(2), o.monat].join("|");
+      const keyE = e => [flat(e.name).toLowerCase(), (+e.betrag || 0).toFixed(2), e.monat].join("|");
+      const kO = new Set(state.orders.map(keyO)), kE = new Set(state.expenses.map(keyE));
+      for (const r of parsed.orders) {
+        if (validId(r.id) ? haveO.has(r.id) : kO.has(keyO(r))) continue;
+        await retry(() => DB.collection("orders").doc(validId(r.id) ? r.id : undefined).set({ ...oFields(r), notiz: "", photoId: null, createdAt: r.row || t++ })); n++;
+      }
+      for (const r of parsed.expenses) {
+        if (validId(r.id) ? haveE.has(r.id) : kE.has(keyE(r))) continue;
+        await retry(() => DB.collection("expenses").doc(validId(r.id) ? r.id : undefined).set({ ...eFields(r), createdAt: r.row || t++ })); n++;
+      }
+      if (n) await sleep(1500);
       return n;
     }
     const plan = AX().planMerge({ orders: state.orders, expenses: state.expenses, excel: parsed, lastO: m.lastO, lastE: m.lastE });
@@ -1005,6 +1016,15 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
       const layoutOk = xl.meta && xl.meta.v === AX().LAYOUT_VERSION && xl.meta.lastO;
       if (checkOnly && !imported && item && layoutOk && xl.meta.hash === h) return;
       let wrote = false;
+      if (item && rows) {
+        // Sicherheitsnetz: Steht in der Excel ein Eintrag mit ID, der in der App (noch) fehlt und nicht bewusst gelöscht wurde,
+        // wird diesmal NICHT in die Excel geschrieben – sonst könnte er überschrieben werden.
+        const parsedNow = AX().parseRows(rows, thisMonth);
+        const idsO = new Set(state.orders.map(o => o.id)), idsE = new Set(state.expenses.map(e => e.id));
+        const lastO = (xl.meta && xl.meta.v === AX().LAYOUT_VERSION && xl.meta.lastO) || {}, lastE = (xl.meta && xl.meta.v === AX().LAYOUT_VERSION && xl.meta.lastE) || {};
+        const missing = parsedNow.orders.some(r => r.id && !idsO.has(r.id) && lastO[r.id] === undefined) || parsedNow.expenses.some(r => r.id && !idsE.has(r.id) && lastE[r.id] === undefined);
+        if (missing) { xl.msg = "Daten aus der Excel werden noch übernommen …"; setTimeout(() => { xl.failedHash = ""; syncXl(false, false); }, 5000); return; }
+      }
       if (item && mode === "workbook") {
         const want = AX().valuesForLayout(AX().fileBlocks(rows), state.orders, state.expenses);
         if (want) { if (AX().gridDiffers(rows, want)) await writeValues(item, want); wrote = true; }
